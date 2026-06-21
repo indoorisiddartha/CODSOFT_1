@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Quote of the Day</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #b0bec5;
+            --accent: #00e676;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-gradient);
+            transition: background 0.8s ease;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 35px 30px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+            color: var(--text-main);
+            text-align: center;
+            position: relative;
+        }
+
+        .app-header {
+            margin-bottom: 30px;
+        }
+
+        .app-header h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ffffff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .date-badge {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .quote-area {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .quote-icon {
+            font-size: 4rem;
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            opacity: 0.07;
+            user-select: none;
+        }
+
+        #quote-text {
+            font-size: 1.35rem;
+            line-height: 1.6;
+            font-weight: 400;
+            margin-bottom: 15px;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        #quote-author {
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--text-muted);
+            transition: opacity 0.4s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            border-color: var(--text-main);
+        }
+
+        .btn-icon.favorited {
+            color: #ff3d00;
+            background: rgba(255, 61, 0, 0.1);
+            border-color: rgba(255, 61, 0, 0.3);
+        }
+
+        .nav-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        .btn-nav {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.2s;
+            padding: 5px 10px;
+        }
+
+        .btn-nav:hover:not(:disabled) {
+            color: var(--accent);
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Favorites Panel Drawer */
+        .favorites-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #16222f;
+            border-radius: 24px;
+            padding: 30px 25px;
+            z-index: 10;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .favorites-panel.open {
+            transform: translateY(0);
+        }
+
+        .fav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .fav-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .fav-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .fav-item p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 5px;
+        }
+
+        .fav-item span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .remove-fav {
+            position: absolute;
+            right: 15px;
+            bottom: 12px;
+            background: none;
+            border: none;
+            color: #ff5252;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Utility Scrollbar */
+        .fav-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .fav-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="app-header">
+            <h1>Quote of the Day</h1>
+            <div class="date-badge" id="display-date">Loading Date...</div>
+        </div>
+
+        <div class="quote-area">
+            <div class="quote-icon">“</div>
+            <p id="quote-text">"The only way to do great work is to love what you do."</p>
+            <p id="quote-author">- Steve Jobs</p>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-icon" id="btn-fav" title="Save to Favorites" onclick="toggleFavorite()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+            <button class="btn-icon" id="btn-share" title="Share Quote" onclick="shareQuote()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+            </button>
+            <button class="btn-icon" id="btn-view-favs" title="View Saved Favorites" onclick="toggleFavPanel(true)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+            </button>
+        </div>
+
+        <div class="nav-navigation">
+            <button class="btn-nav" id="btn-prev" onclick="changeDay(-1)">
+                ← Previous Day
+            </button>
+            <button class="btn-nav" id="btn-next" onclick="changeDay(1)" disabled>
+                Next Day →
+            </button>
+        </div>
+
+        <div class="favorites-panel" id="favorites-panel">
+            <div class="fav-header">
+                <h2>Favorites</h2>
+                <button class="btn-nav" onclick="toggleFavPanel(false)">Close ✕</button>
+            </div>
+            <div class="fav-list" id="fav-list-content">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- JAVASCRIPT LOGIC --- */
+
+        // A curated seed list of 30 premium, heavy-hitting motivational quotes.
+        // The algorithm maps these seamlessly across all 365 days of the year mathematically.
+        const quoteDatabase = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs", theme: "linear-gradient(135deg, #1f4037, #99f2c8)" },
+            { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill", theme: "linear-gradient(135deg, #2c3e50, #000000)" },
+            { text: "Act as if what you do makes a difference. It does.", author: "William James", theme: "linear-gradient(135deg, #ed4264, #ffedbc)" },
+            { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt", theme: "linear-gradient(135deg, #4e54c8, #8f94fb)" },
+            { text: "What you get by achieving your goals is not as important as what you become by achieving your goals.", author: "Zig Ziglar", theme: "linear-gradient(135deg, #11998e, #38ef7d)" },
+            { text: "It always seems impossible until it's done.", author: "Nelson Mandela", theme: "linear-gradient(135deg, #7f00ff, #e100ff)" },
+            { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson", theme: "linear-gradient(135deg, #ff416c, #ff4b2b)" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt", theme: "linear-gradient(135deg, #3a1c1c, #d76d77, #ffaf7b)" },
+            { text: "Aim for the moon. If you miss, you may hit a star.", author: "W. Clement Stone", theme: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)" },
+            { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky", theme: "linear-gradient(135deg, #373b44, #4286f4)" },
+            { text: "Hardships often prepare ordinary people for an extraordinary destiny.", author: "C.S. Lewis", theme: "linear-gradient(135deg, #614385, #516395)" },
+            { text: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs", theme: "linear-gradient(135deg, #141e30, #243b55)" },
+            { text: "If you want to lift yourself up, lift up someone else.", author: "Booker T. Washington", theme: "linear-gradient(135deg, #ff007f, #7f00ff)" },
+            { text: "You must be the change you wish to see in the world.", author: "Mahatma Gandhi", theme: "linear-gradient(135deg, #00b4db, #0083b0)" },
+            { text: "The best way to predict your future is to create it.", author: "Abraham Lincoln", theme: "linear-gradient(135deg, #d3cbb8, #6d604c)" },
+            { text: "With the new day comes new strength and new thoughts.", author: "Eleanor Roosevelt", theme: "linear-gradient(135deg, #134e5e, #71b280)" },
+            { text: "Failure will never overtake me if my determination to succeed is strong enough.", author: "Og Mandino", theme: "linear-gradient(135deg, #ba5370, #f4e2d8)" },
+            { text: "Change your thoughts and you change your world.", author: "Norman Vincent Peale", theme: "linear-gradient(135deg, #4ca1af, #c4e0e5)" },
+            { text: "Keep your face always toward the sunshine - and shadows will fall behind you.", author: "Walt Whitman", theme: "linear-gradient(135deg, #ff5e62, #ff9966)" },
+            { text: "Happiness is not something ready made. It comes from your own actions.", author: "Dalai Lama", theme: "linear-gradient(135deg, #fe8c00, #f83600)" },
+            { text: "Dream big and dare to fail.", author: "Norman Vaughan", theme: "linear-gradient(135deg, #00c6ff, #0072ff)" },
+            { text: "What we achieve inwardly will change outer reality.", author: "Plutarch", theme: "linear-gradient(135deg, #f857a6, #ff5858)" },
+            { text: "Great things are done by a series of small things brought together.", author: "Vincent Van Gogh", theme: "linear-gradient(135deg, #56ab2f, #a8ff78)" },
+            { text: "It is during our darkest moments that we must focus to see the light.", author: "Aristotle", theme: "linear-gradient(135deg, #1d2671, #c33764)" },
+            { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin", theme: "linear-gradient(135deg, #f12711, #f5af19)" },
+            { text: "If you cannot do great things, do small things in a great way.", author: "Napoleon Hill", theme: "linear-gradient(135deg, #2193b0, #6dd5ed)" },
+            { text: "Everything you’ve ever wanted is on the other side of fear.", author: "George Addair", theme: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)" },
+            { text: "The standard you walk past is the standard you accept.", author: "David Hurley", theme: "linear-gradient(135deg, #200b23, #78323c)" },
+            { text: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt", theme: "linear-gradient(135deg, #43c6ac, #191654)" },
+            { text: "Build your own dreams, or someone else will hire you to build theirs.", author: "Farrah Gray", theme: "linear-gradient(135deg, #bc4e9c, #f80759)" }
+        ];
+
+        // State Properties
+        let actualTodayDate = new Date();
+        let browsingDate = new Date(); // Tracks the date user is viewing
+        let favorites = JSON.parse(localStorage.getItem('quote_favorites')) || [];
+
+        // Compute the structural Day number of the year (1 - 365)
+        function getDayOfYear(date) {
+            const start = new Date(date.getFullYear(), 0, 0);
+            const diff = date - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+
+        // Get custom quote indexed smoothly for day of year
+        function getQuoteForDate(date) {
+            const dayNum = getDayOfYear(date);
+            // Deterministic selection mapping day 1-365 down to list index size safely
+            const index = (dayNum * 7 + 13) % quoteDatabase.length; 
+            return quoteDatabase[index];
+        }
+
+        // Update the Screen Render Data
+        function updateAppDisplay() {
+            const quote = getQuoteForDate(browsingDate);
+            const textEl = document.getElementById('quote-text');
+            const authorEl = document.getElementById('quote-author');
+            
+            // Text Fade Animation Effect
+            textEl.style.opacity = 0;
+            textEl.style.transform = "translateY(10px)";
+            authorEl.style.opacity = 0;
+
+            setTimeout(() => {
+                textEl.innerText = `"${quote.text}"`;
+                authorEl.innerText = `- ${quote.author}`;
+                
+                textEl.style.opacity = 1;
+                textEl.style.transform = "translateY(0)";
+                authorEl.style.opacity = 1;
+            }, 300);
+
+            // Render Dynamic Ambient Colors
+            document.body.style.background = quote.theme || 'var(--bg-gradient)';
+
+            // Render Human Readable Date String
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('display-date').innerText = browsingDate.toLocaleDateString('en-US', options);
+
+            // Configure Navigation Boundaries (Prevent visiting future days)
+            const isLookingAtPresent = browsingDate.toDateString() === actualTodayDate.toDateString();
+            document.getElementById('btn-next').disabled = isLookingAtPresent;
+            
+            // Check favorite state
+            updateFavButtonUI(quote.text);
+        }
+
+        // Navigate through history timelines
+        function changeDay(offset) {
+            browsingDate.setDate(browsingDate.getDate() + offset);
+            updateAppDisplay();
+        }
+
+        // Handle structural bookmarking / saving
+        function toggleFavorite() {
+            const currentQuote = getQuoteForDate(browsingDate);
+            const existsIdx = favorites.findIndex(f => f.text === currentQuote.text);
+
+            if(existsIdx > -1) {
+                favorites.splice(existsIdx, 1); // Remove if clicked again
+            } else {
+                favorites.push({
+                    text: currentQuote.text,
+                    author: currentQuote.author,
+                    savedOn: browsingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                });
+            }
+
+            localStorage.setItem('quote_favorites', JSON.stringify(favorites));
+            updateFavButtonUI(currentQuote.text);
+            renderFavoritesList();
+        }
+
+        function updateFavButtonUI(quoteText) {
+            const btn = document.getElementById('btn-fav');
+            const isFav = favorites.some(f => f.text === quoteText);
+            if(isFav) {
+                btn.classList.add('favorited');
+            } else {
+                btn.classList.remove('favorited');
+            }
+        }
+
+        // Delete item cleanly from favorites panel drawer
+        function removeFavoriteByIndex(index) {
+            favorites.splice(index, 1);
+            localStorage.setItem('quote_favorites', JSON.stringify(favorites));
+            renderFavoritesList();
+            // Re-sync current active page button status
+            const currentQuote = getQuoteForDate(browsingDate);
+            updateFavButtonUI(currentQuote.text);
+        }
+
+        // Render data rows out to UI panel 
+        function renderFavoritesList() {
+            const container = document.getElementById('fav-list-content');
+            if(favorites.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); text-align: center; margin-top: 40px;">No saved quotes yet.</p>`;
+                return;
+            }
+
+            container.innerHTML = favorites.map((fav, i) => `
+                <div class="fav-item">
+                    <p>"${fav.text}"</p>
+                    <span>- ${fav.author} (${fav.savedOn})</span>
+                    <button class="remove-fav" onclick="removeFavoriteByIndex(${i})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        // Handle Share UI Intent Native integration or fallback clip alert
+        function shareQuote() {
+            const activeQuote = getQuoteForDate(browsingDate);
+            const shareString = `"${activeQuote.text}" — ${activeQuote.author} (via Quote Of The Day App)`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Inspirational Quote of the Day',
+                    text: shareString,
+                }).catch(err => console.log("Error sharing", err));
+            } else {
+                // Clipboard fallback routine
+                navigator.clipboard.writeText(shareString);
+                alert("Quote copied to clipboard! Share it anywhere you'd like.");
+            }
+        }
+
+        // View and Close control for structural drawer interface layout 
+        function toggleFavPanel(open) {
+            const panel = document.getElementById('favorites-panel');
+            if(open) {
+                panel.classList.add('open');
+            } else {
+                panel.classList.remove('open');
+            }
+        }
+
+        // App Initializer Lifecycle Launch
+        window.onload = function() {
+            updateAppDisplay();
+            renderFavoritesList();
+        };
+    </script>
+</body>
+</html>
